@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>شات الصحاب</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .chat-container { width: 100%; max-width: 400px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .messages { height: 300px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; overflow-y: scroll; margin-bottom: 10px; background: #fafafa; }
+        input, button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #0084ff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: #006dd3; }
+        .msg { margin-bottom: 8px; padding: 6px 10px; background: #e4e6eb; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <h3>شات الصحاب الخاص</h3>
+        <div class="messages" id="chatMessages"></div>
+        <input type="text" id="username" placeholder="اسمك...">
+        <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        // حط هنا إعدادات الفايربيس بتاعتك اللي ظهرت في الشاشة
+        const firebaseConfig = {
+          apiKey: "AIzaSyDZuQLCH_yyTMryyvzErFk1GzerP8mkW8",
+          authDomain: "my-chat-81633.firebaseapp.com",
+          projectId: "my-chat-81633",
+          storageBucket: "my-chat-81633.firebasestorage.app",
+          messagingSenderId: "702914109835",
+          appId: "1:702914109835:web:057a9473bf7cd968828f8e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.sendMessage = async function() {
+            var name = document.getElementById('username').value;
+            var text = document.getElementById('messageInput').value;
+            if(name && text) {
+                await addDoc(collection(db, "messages"), {
+                    name: name,
+                    text: text,
+                    time: Date.now()
+                });
+                document.getElementById('messageInput').value = '';
+            }
+        };
+
+        const q = query(collection(db, "messages"), orderBy("time"));
+        onSnapshot(q, (snapshot) => {
+            let html = '';
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                html += <div class="msg"><b>${data.name}:</b> ${data.text}</div>;
+            });
+            document.getElementById('chatMessages').innerHTML = html;
+        });
+    </script>
+</body>
+</html>
